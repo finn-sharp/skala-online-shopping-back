@@ -9,7 +9,7 @@
 validation을 위해 NotNull 어노테이션을 사용하여 필수 항목을 지정
 */
 
-package com.skala.shopping.dto;
+package com.skala.shopapi.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

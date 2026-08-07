@@ -6,7 +6,7 @@
 컬럼 : id, productName, productPrice
 */
 
-package com.skala.shopping.entity;
+package com.skala.shopapi.data.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
