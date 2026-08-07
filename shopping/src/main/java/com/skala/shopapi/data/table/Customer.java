@@ -6,7 +6,7 @@
 컬럼 : customerId, customerPassword, customerPoint
 */
 
-package com.skala.shopapi.data.entity;
+package com.skala.shopapi.data.table;
 
 import jakarta.persistence.*;
 import lombok.Getter;

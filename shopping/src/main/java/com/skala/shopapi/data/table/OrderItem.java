@@ -6,7 +6,7 @@
 컬럼 : id, customer, product, quantity
 */
 
-package com.skala.shopapi.data.entity;
+package com.skala.shopapi.data.table;
 
 import jakarta.persistence.*;
 import lombok.Getter;
