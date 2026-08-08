@@ -1,4 +1,4 @@
-package com.skala.shopping;
+package com.skala.shopapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
