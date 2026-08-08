@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skala.shopapi.data.table.Product;
+// import com.skala.shopapi.data.dto.ProductDto;
 
 import lombok.RequiredArgsConstructor;
 
