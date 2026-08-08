@@ -31,11 +31,9 @@ public class ProductDto {
     
     private Long id;
 
-    @NotBlank(message = "상품명은 필수입니다")
     @NotNull(message = "상품명은 필수입니다")
     private String productName; // 물품 코드
 
     @Positive
-    @NotNull(message = "상품명은 필수입니다")
     private double productPrice; // 물품 가격
 }
