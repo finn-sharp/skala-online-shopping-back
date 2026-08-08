@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,8 +39,27 @@ public class CustomerController {
         @RequestParam(value="count", defaultValue="10") int count){
             Page<Customer> customers = customerService.getAllCustomers(offset, count);
             return ResponseEntity.ok(customers);
-        }
+    }
 
+    // // 💡 [일반 유저용] 내 정보 조회 API
+    // @GetMapping("/me")
+    // public ResponseEntity<CustomerResponseDto> getMyInfo(Authentication authentication) {
+    //     // SecurityContext에 들어있는 현재 로그인한 유저의 ID(customerId) 추출
+    //     String currentCustomerId = authentication.getName();
+        
+    //     CustomerResponseDto response = customerService.getCustomerByToken(currentCustomerId);
+    //     return ResponseEntity.ok(response);
+    // }
+
+    // // 💡 [관리자용] 특정 유저 상세 조회 API
+    // @PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 가능
+    // @GetMapping("/{customerId}")
+    // public ResponseEntity<Customer> getCustomerByIdForAdmin(@PathVariable("id") String customerId) {
+    //     Customer customer = customerService.getCustomerById(customerId);
+    //     return ResponseEntity.ok(customer);
+    // }
+    
+    
     @GetMapping("/{customerId}")
     @Operation(summary = "단일 고객 상세 조회", description = "고객 ID를 통해 특정 고객 정보 및 주문 상품 리스트를 조회합니다.")
     public ResponseEntity<Customer> getCustomerById(@PathVariable String customerId){

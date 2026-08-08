@@ -2,7 +2,6 @@ package com.skala.shopapi.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +27,19 @@ public class TokenStore {
         this.key = Keys.hmacShaKeyFor(secretKeyString.getBytes());
     }
 
-    // 1. JWT 토큰 생성 
-    public String generateToken(String customerId) {
+    // 1. JWT 토큰 생성 (role 정보 포함)
+    public String generateToken(String customerId, String role) {
+        Claims claims = Jwts.claims().setSubject(customerId);
+        claims.put("role", role); // <-- role을 페이로드(클레임)에 추가
+        
         Date now = new Date();
-        Date validity = new Date(now.getTime() + tokenValidTime);
+        Date validity = new Date(now.getTime() + tokenValidTime); // 선언된 변수명(tokenValidTime) 사용
 
         return Jwts.builder()
-                .setSubject(customerId) // 토큰에 담을 사용자 ID
-                .setIssuedAt(now)       // 토큰 발행 시간
-                .setExpiration(validity)// 토큰 만료 시간
-                .signWith(key, SignatureAlgorithm.HS256) // 고정된 비밀키로 서명
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(key) // init()에서 생성해둔 Key 객체 사용
                 .compact();
     }
 
@@ -60,5 +62,15 @@ public class TokenStore {
             // 위조되었거나, 만료되었거나, 형식이 틀린 경우
             return false;
         }
+    }
+    
+    // 4. JWT 토큰에서 권한(role) 추출
+    public String getRole(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class);
     }
 }

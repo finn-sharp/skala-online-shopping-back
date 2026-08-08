@@ -14,6 +14,8 @@ public class CustomerLoginResponseDto {
     private String customerId;
     
     private double customerPoint; 
+
+    private String role;
     
     private String accessToken;
 }
