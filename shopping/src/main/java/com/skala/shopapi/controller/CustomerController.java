@@ -2,6 +2,7 @@ package com.skala.shopapi.controller;
 
 import com.skala.shopapi.data.table.Customer;
 import com.skala.shopapi.data.dto.CustomerSessionDto;
+import com.skala.shopapi.data.dto.OrderRequestDto;
 
 import org.springframework.http.ResponseEntity;
 
@@ -53,6 +54,16 @@ public class CustomerController {
     @DeleteMapping
     public ResponseEntity<String> deleteCustomer(@RequestBody Customer customer){
         return ResponseEntity.ok("고객 정보 > DB 상 고객 정보 제거");
+    }
+
+    @PostMapping("/order")
+    public ResponseEntity<String> placeOrder(@RequestBody OrderRequestDto order){
+        return ResponseEntity.ok("고객이 상품 주문");
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<String> cancelOrder(@RequestBody OrderRequestDto order){
+        return ResponseEntity.ok("서비스로 OrderRequest 전달");
     }
 
 }
