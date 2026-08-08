@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.skala.shopapi.common.PagedList;
 import com.skala.shopapi.data.dto.ProductDto;
 import com.skala.shopapi.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -27,11 +26,11 @@ public class ProductController {
 
     @GetMapping("/list")
     @Operation(summary = "상품 목록 조회", description = "offset/count 기준으로 상품 목록을 조회합니다.")
-    public ResponseEntity<List<ProductDto>> getAllProducts(
+    public ResponseEntity<PagedList<ProductDto>> getAllProducts(
         @RequestParam(defaultValue = "0") Integer offset,
         @RequestParam(defaultValue = "10") Integer count) {
 
-            List<ProductDto> products = productService.getAllProducts(offset, count);
+            PagedList<ProductDto> products = productService.getAllProducts(offset, count);
 
             return ResponseEntity.ok(products);
     }

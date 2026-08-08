@@ -20,17 +20,16 @@ import com.skala.shopapi.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 
 import com.skala.shopapi.data.table.Product;
+import com.skala.shopapi.common.PagedList;
 import com.skala.shopapi.data.dto.ProductDto;
 import com.skala.shopapi.exception.Error; // java.lang.Error 와 이름이 겹치므로 반드시 명시적으로 import
 import com.skala.shopapi.exception.ParameterException;
 import com.skala.shopapi.exception.ResponseException;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -52,18 +51,16 @@ public class ProductService {
     }
 
     // 전체 상품 목록 조회 ( offset 행부터 count 만큼 )
-    public List<ProductDto> getAllProducts(int offset, int count) {
-        // 1. 입력값 검증
+    public PagedList<ProductDto> getAllProducts(int offset, int count) {
         if (offset < 0 || count <= 0) {
             throw new ParameterException("offset", "count");
         }
 
         Pageable pageable = PageRequest.of(offset / count, count, Sort.by("id").ascending());
+        Page<ProductDto> page = productRepository.findAll(pageable).map(this::convertToDto);
 
-        return productRepository.findAll(pageable)
-                .map(this::convertToDto)
-                .getContent();
-    }
+        return PagedList.of(page, offset, count);
+    } 
 
     // 상품 등록
     @Transactional
