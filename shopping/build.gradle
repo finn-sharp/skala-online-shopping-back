@@ -29,7 +29,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+	// Login
+	// JJWT 라이브러리 (JWT 생성 및 검증용)
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	
 	// AOP가 실제로 필요한지 먼저 확인하세요.
 	// org.aspectj.lang.annotation 패키지의 애노테이션(@Aspect 등)을 안 쓴다면 아예 빼도 됩니다.
 	// 쓴다면:

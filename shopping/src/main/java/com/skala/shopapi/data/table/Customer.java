@@ -4,13 +4,18 @@
 날짜 : 2026-08-07
 
 컬럼 : customerId, customerPassword, customerPoint
+
+변경사항 : 초기작성(정희중)
+         AllArgsConstructor 추가 및 Builder 패턴 적용(김재현, 08.08)
 */
 
 package com.skala.shopapi.data.table;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 @Entity
@@ -18,6 +23,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Customer {
 
     public Customer(String customerId, double customerPoint) {
