@@ -21,6 +21,9 @@ import jakarta.transaction.Transactional;
 
 import com.skala.shopapi.data.table.Product;
 import com.skala.shopapi.data.dto.ProductDto;
+import com.skala.shopapi.exception.Error; // java.lang.Error 와 이름이 겹치므로 반드시 명시적으로 import
+import com.skala.shopapi.exception.ParameterException;
+import com.skala.shopapi.exception.ResponseException;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,21 +46,19 @@ public class ProductService {
     public ProductDto getProductById(Long id)
     {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         return convertToDto(product);
     }
 
     // 전체 상품 목록 조회 ( offset 행부터 count 만큼 )
     public List<ProductDto> getAllProducts(int offset, int count) {
-        /*
-        if (count <= 0 || offset < 0) {
+        // 1. 입력값 검증
+        if (offset < 0 || count <= 0) {
             throw new ParameterException("offset", "count");
         }
 
-        */
-
-        Pageable pageable = PageRequest.of(offset, count, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(offset / count, count, Sort.by("id").ascending());
 
         return productRepository.findAll(pageable)
                 .map(this::convertToDto)
@@ -68,7 +69,6 @@ public class ProductService {
     @Transactional
     public ProductDto createProduct(ProductDto productDto) {
 
-        /* 
         // 1. 입력값 검증
         if (productDto.getProductName() == null || productDto.getProductName().isBlank()
                 || productDto.getProductPrice() <= 0) {
@@ -80,10 +80,9 @@ public class ProductService {
                 .ifPresent(p -> {
                     throw new ResponseException(Error.DATA_DUPLICATED);
                 });
-        */
-        // 3. 신규 Product 생성 (ID는 0L로 세팅 → JPA가 저장 시 자동 생성)
+
+        // 3. 신규 Product 생성 (id 를 넣지 않아야 JPA 가 신규로 판단해 자동 생성한다)
         Product product = Product.builder()
-                .id(0L)
                 .productName(productDto.getProductName())
                 .productPrice(productDto.getProductPrice())
                 .build();
@@ -98,23 +97,22 @@ public class ProductService {
     @Transactional
     public ProductDto updateProduct(Long id, ProductDto productDto)
     {
-        /* 
         // 1. 입력값 검증
         if (productDto.getProductName() == null || productDto.getProductName().isBlank()
                 || productDto.getProductPrice() <= 0) {
             throw new ParameterException("productName", "productPrice");
         }
 
-        // 2. 이름 중복 체크
+        // 2. 이름 중복 체크 (자기 자신은 중복이 아니므로 제외)
         productRepository.findByProductName(productDto.getProductName())
+        .filter(p -> !p.getId().equals(id))
         .ifPresent(p -> {
             throw new ResponseException(Error.DATA_DUPLICATED);
         });
-        */
 
         // 3. 상품 조회
         Product product = productRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + id));
+        .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         // 수정 함수
         product.setProductName(productDto.getProductName());
@@ -129,8 +127,14 @@ public class ProductService {
     @Transactional
     public ProductDto deleteProduct(ProductDto productDto)
     {
+        // 1. 입력값 검증 (id 가 null 이면 findById 자체가 예외를 던지므로 먼저 막는다)
+        if (productDto.getId() == null) {
+            throw new ParameterException("id");
+        }
+
+        // 2. 상품 조회
         Product product = productRepository.findById(productDto.getId())
-        .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + productDto.getId()));
+        .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         productRepository.delete(product);
         return convertToDto(product);
