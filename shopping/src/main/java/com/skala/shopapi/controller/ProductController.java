@@ -11,41 +11,61 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.skala.shopapi.data.table.Product;
-// import com.skala.shopapi.data.dto.ProductDto;
+import com.skala.shopapi.data.dto.ProductDto;
+import com.skala.shopapi.service.ProductService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 public class ProductController {
-    // private final ProductService productService;
+    private final ProductService productService;
 
     @GetMapping("/list")
-    public ResponseEntity<String> getAllProducts(
+    @Operation(summary = "상품 목록 조회", description = "offset/count 기준으로 상품 목록을 조회합니다.")
+    public ResponseEntity<List<ProductDto>> getAllProducts(
         @RequestParam(defaultValue = "0") Integer offset,
         @RequestParam(defaultValue = "10") Integer count) {
-            return ResponseEntity.ok("상품 목록 DTO(페이징 적용)");
+
+            List<ProductDto> products = productService.getAllProducts(offset, count);
+
+            return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getProductById(@PathVariable Long id) {
-            return ResponseEntity.ok("특정 ID 상품 정보 반환 DTO");
+    @Operation(summary = "특정 상품 정보 조회", description = "특정 상품 정보를 조회합니다.")
+    public ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id) {
+        ProductDto product = productService.getProductById(id);
+        
+        return ResponseEntity.ok(product);
     }
 
     @PostMapping
-    public ResponseEntity<String> createProduct(@RequestBody Product product){
-        return ResponseEntity.ok("새 상품 등록 결과 반환 -> DB 상 등록");
+    @Operation(summary = "신규 상품 등록", description = "신규 상품을 등록합니다.")
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto product){
+        
+        ProductDto productDto = productService.createProduct(product);
+        return ResponseEntity.ok(productDto);
     }
 
-    @PutMapping
-    public ResponseEntity<String> updateProduct(@RequestBody Product product){
-        return ResponseEntity.ok("상품 정보 업데이트 -> DB 상 업데이트");
+    @PutMapping("/{id}")
+    @Operation(summary = "특정 상품 정보 수정", description = "특정 상품 정보를 수정합니다.")
+    public ResponseEntity<ProductDto> updateProduct(
+        @PathVariable("id") Long id,
+        @RequestBody ProductDto product){
+        ProductDto productDto = productService.updateProduct(id,product);
+        
+        return ResponseEntity.ok(productDto);
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteProduct(@RequestBody Product product){
-        return ResponseEntity.ok("서비스 상품 정보 전달(id로 충분) -> DB 상 삭제");
+    @Operation(summary = "특정 상품 정보 삭제", description = "특정 상품 정보를 삭제합니다.")
+    public ResponseEntity<ProductDto> deleteProduct(@RequestBody ProductDto product){
+        ProductDto productDto = productService.deleteProduct(product);
+        return ResponseEntity.ok(productDto);
     }
 }
