@@ -1,8 +1,15 @@
 package com.skala.shopapi.controller;
 
 import com.skala.shopapi.data.table.Customer;
-import com.skala.shopapi.data.dto.CustomerSessionDto;
+import com.skala.shopapi.data.dto.CustomerLoginRequestDto;
+import com.skala.shopapi.data.dto.CustomerLoginResponseDto;
+import com.skala.shopapi.data.dto.OrderRequestDto;
+import com.skala.shopapi.service.CustomerService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,42 +24,72 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Customer API", description = "고객 관리 및 주문 API")
 @RestController
-@RequestMapping("/api/customer")
+@RequestMapping("/api/customers")
 @RequiredArgsConstructor
 public class CustomerController {
-    // private final CustomerService customerService;
+
+    private final CustomerService customerService;
 
     @GetMapping("/list")
-    public ResponseEntity<String> getAllcustomers(
+    @Operation(summary = "전체 고객 목록 조회", description = "페이징을 적용하여 전체 고객 목록을 조회합니다.")
+    public ResponseEntity<Page<Customer>> getAllCustomers(
         @RequestParam(value="offset", defaultValue="0") int offset,
-        @RequestParam(value="count", defaultValue="0") int count){
-            return ResponseEntity.ok("페이징이 적용된 고객 목록 반환");
+        @RequestParam(value="count", defaultValue="10") int count){
+            Page<Customer> customers = customerService.getAllCustomers(offset, count);
+            return ResponseEntity.ok(customers);
         }
 
     @GetMapping("/{customerId}")
-    public ResponseEntity<String> getCustomerById(@PathVariable String customerId){
-        return ResponseEntity.ok("특정 고객 정보 및 주문 상품 리스트 반환");
+    @Operation(summary = "단일 고객 상세 조회", description = "고객 ID를 통해 특정 고객 정보 및 주문 상품 리스트를 조회합니다.")
+    public ResponseEntity<Customer> getCustomerById(@PathVariable String customerId){
+        Customer customer = customerService.getCustomerById(customerId);
+        return ResponseEntity.ok(customer);
     }
 
     @PostMapping
-    public ResponseEntity<String> createCustomer(@RequestBody Customer customer){
-        return ResponseEntity.ok("신규 고객 등록 > DB 상 등록");
+    @Operation(summary = "신규 고객 등록", description = "새로운 고객 정보를 DB에 등록합니다.")
+    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer){
+        Customer createdCustomer = customerService.createCustomer(customer);
+        return ResponseEntity.ok(createdCustomer);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginCustomer(@RequestBody CustomerSessionDto customerSessionDto){
-        return ResponseEntity.ok("로그인 성공 시, 토큰/세션 부여 및 고객 정보 반환");
+    @Operation(summary = "신규 고객 등록", description = "새로운 고객 정보를 DB에 등록합니다.")
+    public ResponseEntity<CustomerLoginResponseDto> login(@RequestBody CustomerLoginRequestDto requestDto) {
+        // 서비스에서 토큰이 포함된 DTO를 받아옴
+        CustomerLoginResponseDto response = customerService.login(requestDto);
+        
+        // 200 OK와 함께 클라이언트로 응답 전달
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping
-    public ResponseEntity<String> updateCustomer(@RequestBody Customer customer){
-        return ResponseEntity.ok("수정할 고객 정보 > DB 상 업데이트");
+    @Operation(summary = "고객 정보 수정", description = "고객 정보를 DB에 업데이트합니다.")
+    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer customer){
+        Customer updatedCustomer = customerService.updateCustomer(customer);
+        return ResponseEntity.ok(updatedCustomer);
     }
 
     @DeleteMapping
+    @Operation(summary = "고객 삭제", description = "고객 정보를 DB에서 제거합니다.")
     public ResponseEntity<String> deleteCustomer(@RequestBody Customer customer){
-        return ResponseEntity.ok("고객 정보 > DB 상 고객 정보 제거");
+        customerService.deleteCustomer(customer);
+        return ResponseEntity.ok("고객 정보 삭제 완료");
     }
 
+    @PostMapping("/order")
+    @Operation(summary = "상품 주문", description = "고객이 원하는 상품과 수량을 주문하고 포인트를 차감합니다.")
+    public ResponseEntity<String> placeOrder(@RequestBody OrderRequestDto order){
+        customerService.placeOrder(order);
+        return ResponseEntity.ok("상품 주문 완료");
+    }
+
+    @PostMapping("/cancel")
+    @Operation(summary = "주문 취소", description = "주문했던 상품의 수량을 취소하고 포인트를 환급받습니다.")
+    public ResponseEntity<String> cancelOrder(@RequestBody OrderRequestDto order){
+        customerService.cancelOrder(order);
+        return ResponseEntity.ok("주문 취소 완료");
+    }
 }
