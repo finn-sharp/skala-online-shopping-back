@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @Getter
@@ -31,7 +30,7 @@ public class ProductDto {
     
     private Long id;
 
-    @NotNull(message = "상품명은 필수입니다")
+    @NotBlank(message = "상품명은 필수입니다")
     private String productName; // 물품 코드
 
     @Positive
