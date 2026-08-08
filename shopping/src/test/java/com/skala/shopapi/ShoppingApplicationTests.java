@@ -1,4 +1,4 @@
-package com.skala.shopping;
+package com.skala.shopapi;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,5 +9,4 @@ class ShoppingApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
