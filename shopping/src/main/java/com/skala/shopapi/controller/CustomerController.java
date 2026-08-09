@@ -4,6 +4,7 @@ import com.skala.shopapi.data.table.Customer;
 import com.skala.shopapi.data.dto.CustomerLoginRequestDto;
 import com.skala.shopapi.data.dto.CustomerLoginResponseDto;
 import com.skala.shopapi.data.dto.OrderRequestDto;
+import com.skala.shopapi.data.dto.OrderResponseDto;
 import com.skala.shopapi.service.CustomerService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -75,7 +75,7 @@ public class CustomerController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "신규 고객 등록", description = "새로운 고객 정보를 DB에 등록합니다.")
+    @Operation(summary = "고객 로그인", description = "ID/Password를 통해 서비스에 로그인합니다.")
     public ResponseEntity<CustomerLoginResponseDto> login(@RequestBody CustomerLoginRequestDto requestDto) {
         // 서비스에서 토큰이 포함된 DTO를 받아옴
         CustomerLoginResponseDto response = customerService.login(requestDto);
@@ -97,18 +97,18 @@ public class CustomerController {
         customerService.deleteCustomer(customer);
         return ResponseEntity.ok("고객 정보 삭제 완료");
     }
-
+    
     @PostMapping("/order")
     @Operation(summary = "상품 주문", description = "고객이 원하는 상품과 수량을 주문하고 포인트를 차감합니다.")
-    public ResponseEntity<String> placeOrder(@RequestBody OrderRequestDto order){
-        customerService.placeOrder(order);
-        return ResponseEntity.ok("상품 주문 완료");
+    public ResponseEntity<OrderResponseDto> placeOrder(@RequestBody OrderRequestDto order) {
+        OrderResponseDto response = customerService.placeOrder(order);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/cancel")
     @Operation(summary = "주문 취소", description = "주문했던 상품의 수량을 취소하고 포인트를 환급받습니다.")
-    public ResponseEntity<String> cancelOrder(@RequestBody OrderRequestDto order){
-        customerService.cancelOrder(order);
-        return ResponseEntity.ok("주문 취소 완료");
+    public ResponseEntity<OrderResponseDto> cancelOrder(@RequestBody OrderRequestDto order) {
+        OrderResponseDto response = customerService.cancelOrder(order);
+        return ResponseEntity.ok(response);
     }
 }
