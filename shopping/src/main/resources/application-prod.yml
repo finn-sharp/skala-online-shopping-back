@@ -1,16 +1,25 @@
 spring:
   datasource:
-    # 실무나 GCP VM 환경에 맞는 DB URL로 변경 가능 (현재는 H2 기준 예시)
-    url: jdbc:h2:mem:prod_db;MODE=MySQL 
+    url: ${DB_URL}
     driver-class-name: org.h2.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
+      # 운영 환경에서는 절대 테이블을 자동 수정/생성(create, update)하면 안 됩니다. 
+      # 오직 스키마가 일치하는지 검증(validate)하거나, 실무에서는 아예 none을 쓰고 Flyway/Liquibase 같은 도구로 관리합니다.
       ddl-auto: validate 
     show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  # 💡 운영 환경에서는 테스트용 SQL(sample.sql 등)이 절대 자동으로 돌지 않도록 강제 차단
+  sql:
+    init:
+      mode: never
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  expiration: ${JWT_EXPIRATION_KEY}
+  expiration: ${JWT_EXPIRATION_KEY} 

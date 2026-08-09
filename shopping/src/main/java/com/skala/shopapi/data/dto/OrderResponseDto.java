@@ -3,19 +3,21 @@ package com.skala.shopapi.data.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
 import lombok.Builder;
 
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class CustomerLoginResponseDto {
+public class OrderResponseDto {
     
     private String customerId;
     
-    private double customerPoint; 
-
-    private String role;
+    private Double remainingPoint; 
     
-    private String accessToken;
+    private List<OrderItemDto> orderItems; 
 }

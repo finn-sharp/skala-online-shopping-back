@@ -7,6 +7,7 @@
 
 변경사항 : 초기작성(정희중)
          AllArgsConstructor 추가 및 Builder 패턴 적용(김재현, 08.08)
+         role 필드 추가(김재현, 08.09)
 */
 
 package com.skala.shopapi.data.table;
@@ -27,17 +28,15 @@ import lombok.Setter;
 @Builder
 public class Customer {
 
-    public Customer(String customerId, double customerPoint) {
-        this.customerId = customerId;
-        this.customerPoint = customerPoint;
-    }
-
     @Id
     private String customerId; // 고객 아이디
 
-    @Column(nullable = false, unique = true, length = 20)
-    private String customerPassword; // 비밀번호
+    @Column(nullable = false, length = 100)
+    private String customerPassword; // 암호화된 비밀번호
 
     @Column(nullable = false)
     private double customerPoint; // 고객 포인트
+
+    @Column(nullable = false)
+    private String role; // 권한 (예: "ROLE_ADMIN", "ROLE_USER")
 }
