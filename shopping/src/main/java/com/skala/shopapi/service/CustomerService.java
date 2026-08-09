@@ -12,6 +12,9 @@ import com.skala.shopapi.data.table.Product;
 import com.skala.shopapi.repository.CustomerRepository;
 import com.skala.shopapi.repository.OrderItemRepository;
 import com.skala.shopapi.repository.ProductRepository;
+import com.skala.shopapi.exception.Error; // java.lang.Error 와 이름이 겹치므로 반드시 명시적으로 import
+import com.skala.shopapi.exception.ParameterException;
+import com.skala.shopapi.exception.ResponseException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +39,10 @@ public class CustomerService {
     // 1. 전체 고객 목록 조회 (읽기 전용)
     @Transactional(readOnly = true)
     public Page<Customer> getAllCustomers(int offset, int count) {
+        if (offset < 0 || count <= 0) {
+            throw new ParameterException("offset", "count");
+        }
+
         Pageable pageable = PageRequest.of(offset, count);
         return customerRepository.findAll(pageable);
     }
@@ -44,18 +51,18 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Customer getCustomerById(String customerId) {
         return customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
     }
 
     // 3. 신규 고객 등록 (생성)
     @Transactional
     public Customer createCustomer(Customer customer) {
         if (customer.getCustomerId() == null || customer.getCustomerPassword() == null) {
-            throw new IllegalArgumentException("Customer ID and Password must not be null");
+            throw new ResponseException(Error.NOT_FOUND);
         }
         if (customerRepository.existsById(customer.getCustomerId())) {
-            throw new IllegalStateException("Customer ID already exists");
-        }
+            throw new ResponseException(Error.NOT_FOUND);
+         }
         
         // 평문 비밀번호를 BCrypt로 암호화
         String encodedPassword = passwordEncoder.encode(customer.getCustomerPassword());
@@ -72,7 +79,7 @@ public class CustomerService {
     public CustomerLoginResponseDto login(CustomerLoginRequestDto requestDto) {
         // 1. 아이디 조회
         Customer customer = customerRepository.findById(requestDto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 아이디입니다."));
+                        .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         String inputPassword = requestDto.getCustomerPassword();
         String dbPassword = customer.getCustomerPassword();
@@ -100,18 +107,26 @@ public class CustomerService {
     // 5. 고객 정보 수정 (수정)
     @Transactional
     public Customer updateCustomer(Customer customer) {
-        if (!customerRepository.existsById(customer.getCustomerId())) {
-            throw new RuntimeException("Customer not found");
+        // 1. 기존 고객이 존재하는지 확인 (throw 누락 해결)
+        Customer existingCustomer = customerRepository.findById(customer.getCustomerId())
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
+
+        // 2. 비밀번호가 변경되어 들어온 경우, 평문일 수 있으므로 다시 암호화 처리 (선택적이지만 안전)
+        if (customer.getCustomerPassword() != null && !customer.getCustomerPassword().equals(existingCustomer.getCustomerPassword())) {
+            String encodedPassword = passwordEncoder.encode(customer.getCustomerPassword());
+            customer.setCustomerPassword(encodedPassword);
         }
+
+        // 3. 수정된 정보 저장
         return customerRepository.save(customer);
     }
 
     // 6. 고객 삭제 (삭제)
     @Transactional
-    public void deleteCustomer(Customer customer) {
-        if (!customerRepository.existsById(customer.getCustomerId())) {
-            throw new RuntimeException("Customer not found");
-        }
+    public void deleteCustomer(String customerId) { // 혹은 Customer 객체 그대로 받기
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
+        
         customerRepository.delete(customer);
     }
 
@@ -121,13 +136,13 @@ public class CustomerService {
     @Transactional
     public OrderResponseDto placeOrder(OrderRequestDto orderRequest) {
         Customer customer = customerRepository.findById(orderRequest.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 고객입니다."));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         double totalAmount = 0.0;
 
         for (OrderItemDto itemDto : orderRequest.getOrderItems()) {
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 상품입니다. (ID: " + itemDto.getProductId() + ")"));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
             totalAmount += product.getProductPrice() * itemDto.getQuantity();
 
@@ -158,14 +173,14 @@ public class CustomerService {
     public OrderResponseDto cancelOrder(OrderRequestDto orderRequest) {
         // 1. 고객 조회
         Customer customer = customerRepository.findById(orderRequest.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 고객입니다."));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
         double refundAmount = 0.0;
 
         // 2. 주문 취소 대상 상품들의 환급금 계산 및 주문 내역 삭제 처리
         for (OrderItemDto itemDto : orderRequest.getOrderItems()) {
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 상품입니다."));
+                .orElseThrow(() -> new ResponseException(Error.NOT_FOUND));
 
             refundAmount += product.getProductPrice() * itemDto.getQuantity();
 
