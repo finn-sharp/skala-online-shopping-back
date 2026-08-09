@@ -91,11 +91,11 @@ public class CustomerController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
-    @DeleteMapping
-    @Operation(summary = "고객 삭제", description = "고객 정보를 DB에서 제거합니다.")
-    public ResponseEntity<String> deleteCustomer(@RequestBody Customer customer){
-        customerService.deleteCustomer(customer);
-        return ResponseEntity.ok("고객 정보 삭제 완료");
+    @DeleteMapping("/{customerId}") 
+    @Operation(summary = "고객 삭제", description = "고객 ID를 받아 탈퇴 처리합니다.")
+    public ResponseEntity<String> deleteCustomer(@PathVariable String customerId) {
+        customerService.deleteCustomer(customerId);
+        return ResponseEntity.ok("고객 삭제 완료");
     }
     
     @PostMapping("/order")

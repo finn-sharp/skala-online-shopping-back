@@ -89,7 +89,7 @@ public class CustomerService {
                 || inputPassword.equals(dbPassword);
 
         if (!isMatch) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new ParameterException("inputPassword", "dbPassword");
         }
 
         // 3. 로그인 성공 시 인증 토큰 생성 (role 정보 포함)        
@@ -123,7 +123,7 @@ public class CustomerService {
 
     // 6. 고객 삭제 (삭제)
     @Transactional
-    public void deleteCustomer(String customerId) { // 혹은 Customer 객체 그대로 받기
+    public void deleteCustomer(String customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found with id: " + customerId));
         
@@ -152,7 +152,7 @@ public class CustomerService {
         }
 
         if (customer.getCustomerPoint() < totalAmount) {
-            throw new RuntimeException("포인트가 부족합니다. (현재 포인트: " + customer.getCustomerPoint() + ", 필요 포인트: " + totalAmount + ")");
+            throw new ParameterException("totalAmount","customerPoint");
         }
 
         customer.setCustomerPoint(customer.getCustomerPoint() - totalAmount);
